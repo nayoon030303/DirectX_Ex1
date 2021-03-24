@@ -8,16 +8,23 @@
 
 #define width = 640
 #define height = 480
+#define MAP_PROPERTY_EDGE 100
+#define MAP_PROPERTY_VISITING 200
+#define MAP_PROPERTY_VISIT 300
+#define MAP_PROPERTY_EMPTY 400
 
 
 LPD3DXSPRITE spr;
 LPDIRECT3DTEXTURE9* backgroundTex = nullptr;
 LPDIRECT3DTEXTURE9* maskTex = nullptr;
+LPDIRECT3DTEXTURE9* dotTex = nullptr;
 
 int map[640 * 480];
+
 DWORD pixelData[640 * 480];
 
 
+void updateTex();
 
 //--------------------------------------------------------------------------------------
 // Rejects any D3D9 devices that aren't acceptable to the app by returning false
@@ -52,6 +59,31 @@ bool CALLBACK ModifyDeviceSettings(DXUTDeviceSettings* pDeviceSettings, void* pU
 HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
     void* pUserContext)
 {
+    //release Map
+    for (int i = 0; i < 640 * 480; ++i)
+    {
+        map[i] = MAP_PROPERTY_EMPTY;
+    }
+    for (int y = 200; y <= 300; ++y)
+    {
+        for (int x = 400; x <= 600; ++x)
+        {
+            map[y * 640 + x] = MAP_PROPERTY_VISIT;
+        }
+    }
+    //edge columns
+    for (int y = 200; y <= 300; ++y)
+    {
+        map[y * 640 + 400] = MAP_PROPERTY_EDGE;
+        map[y * 640 + 600] = MAP_PROPERTY_EDGE;
+    }
+    //edge rows
+    for (int x = 400; x <= 600; ++x)
+    {
+        map[200* 640 + x] = MAP_PROPERTY_EDGE;
+        map[300 * 640 + x] = MAP_PROPERTY_EDGE;
+    }
+
     backgroundTex = new LPDIRECT3DTEXTURE9();
     D3DXCreateTextureFromFileExA(
         pd3dDevice,
@@ -69,16 +101,27 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
         nullptr, backgroundTex);
 
 
-    maskTex = new LPDIRECT3DTEXTURE9;
+    maskTex = new LPDIRECT3DTEXTURE9();
     D3DXCreateTextureFromFileExA(pd3dDevice, "mask.png", D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 0,
         0,
         D3DFMT_UNKNOWN,
-        D3DPOOL_DEFAULT,
+        D3DPOOL_MANAGED,
         D3DX_DEFAULT,
         D3DX_DEFAULT,
         0,
         nullptr,
         nullptr, maskTex);
+
+    dotTex = new LPDIRECT3DTEXTURE9();
+    D3DXCreateTextureFromFileExA(pd3dDevice, "dot.png", D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 0,
+        0,
+        D3DFMT_UNKNOWN,
+        D3DPOOL_MANAGED,
+        D3DX_DEFAULT,
+        D3DX_DEFAULT,
+        0,
+        nullptr,
+        nullptr, dotTex);
 
 
     RECT rc = { 0,0,640,480 };
@@ -90,13 +133,28 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
         (*backgroundTex)->UnlockRect(0);
     }
 
-
+    updateTex();
 
     D3DXCreateSprite(pd3dDevice, &spr);
 
     return S_OK;
 }
-
+void updateTex()
+{
+    RECT rc = { 0,0,640,480 };
+    D3DLOCKED_RECT lockRc;
+    if (SUCCEEDED((*maskTex)->LockRect(0, &lockRc, &rc, 0)))
+    {
+        for (int i = 0; i < 640 * 480; ++i)
+        {
+            if (map[i] == MAP_PROPERTY_VISIT)
+            {
+                DWORD* d = (DWORD*)lockRc.pBits;
+                d[i] = pixelData[i];
+            }
+       }
+    }
+}
 
 //--------------------------------------------------------------------------------------
 // Create any D3D9 resources that won't live through a device reset (D3DPOOL_DEFAULT) 
@@ -131,7 +189,23 @@ void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, floa
     if (SUCCEEDED(pd3dDevice->BeginScene()))
     {
         spr->Begin(D3DXSPRITE_ALPHABLEND);
-        spr->Draw(*backgroundTex, nullptr, nullptr, nullptr, D3DCOLOR_RGBA(255, 255, 255, 255));
+        spr->Draw(*maskTex, nullptr, nullptr, nullptr, D3DCOLOR_RGBA(255, 255, 255, 255));
+        
+        for (int y = 0; y < 480; ++y)
+        {
+            for (int x = 0; x < 640; ++x)
+            {
+                if (map[y * 640 + x] == MAP_PROPERTY_EDGE)
+                {
+                    D3DXVECTOR3 pos(x, y, 0);
+                    spr->Draw(*dotTex, nullptr, nullptr, &pos, D3DCOLOR_RGBA(0, 0, 0, 255));
+                }
+
+            }
+
+        }
+        
+        
         spr->End();
 
         V(pd3dDevice->EndScene());
@@ -165,6 +239,7 @@ void CALLBACK OnD3D9DestroyDevice(void* pUserContext)
     spr->Release();
     (*maskTex)->Release();
     (*backgroundTex)->Release();
+    (*dotTex)->Release();
 }
 
 
