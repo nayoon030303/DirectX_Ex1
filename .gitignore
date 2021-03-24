@@ -16,3 +16,9 @@ EmptyProject/.vs/EmptyProject_2010/v16/Browse.VC.db
 *.opendb
 
 *.db-wal
+
+EmptyProject/.vs/EmptyProject_2010/v16/
+
+*.tlog
+
+*.ipch
