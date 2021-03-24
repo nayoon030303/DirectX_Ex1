@@ -18,9 +18,10 @@ LPD3DXSPRITE spr;
 LPDIRECT3DTEXTURE9* backgroundTex = nullptr;
 LPDIRECT3DTEXTURE9* maskTex = nullptr;
 LPDIRECT3DTEXTURE9* dotTex = nullptr;
+LPDIRECT3DTEXTURE9* playerTex = nullptr;
 
+int px, py;
 int map[640 * 480];
-
 DWORD pixelData[640 * 480];
 
 
@@ -59,6 +60,8 @@ bool CALLBACK ModifyDeviceSettings(DXUTDeviceSettings* pDeviceSettings, void* pU
 HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc,
     void* pUserContext)
 {
+    px = 400;
+    py = 200;
     //release Map
     for (int i = 0; i < 640 * 480; ++i)
     {
@@ -122,6 +125,17 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
         0,
         nullptr,
         nullptr, dotTex);
+
+    playerTex = new LPDIRECT3DTEXTURE9();
+    D3DXCreateTextureFromFileExA(pd3dDevice, "player.png", D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 0,
+        0,
+        D3DFMT_UNKNOWN,
+        D3DPOOL_MANAGED,
+        D3DX_DEFAULT,
+        D3DX_DEFAULT,
+        0,
+        nullptr,
+        nullptr, playerTex);
 
 
     RECT rc = { 0,0,640,480 };
@@ -191,6 +205,7 @@ void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, floa
         spr->Begin(D3DXSPRITE_ALPHABLEND);
         spr->Draw(*maskTex, nullptr, nullptr, nullptr, D3DCOLOR_RGBA(255, 255, 255, 255));
         
+        //EDGE
         for (int y = 0; y < 480; ++y)
         {
             for (int x = 0; x < 640; ++x)
@@ -205,6 +220,8 @@ void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, floa
 
         }
         
+        D3DXVECTOR3 playerPos(px-4, py-4, 0);
+        spr->Draw(*playerTex, nullptr, nullptr, &playerPos, D3DCOLOR_RGBA(255, 255, 255, 255));
         
         spr->End();
 
@@ -240,6 +257,7 @@ void CALLBACK OnD3D9DestroyDevice(void* pUserContext)
     (*maskTex)->Release();
     (*backgroundTex)->Release();
     (*dotTex)->Release();
+    (*playerTex)->Release();
 }
 
 
