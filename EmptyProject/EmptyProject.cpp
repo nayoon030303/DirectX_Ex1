@@ -186,6 +186,22 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFAC
 //--------------------------------------------------------------------------------------
 void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 {
+    if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
+    {
+        px -= 1;
+    }
+    if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
+    {
+        px += 1;
+    }
+    if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
+    {
+        py -= 1;
+    }
+    if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
+    {
+        py += 1;
+    }
 }
 
 
