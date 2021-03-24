@@ -10,6 +10,8 @@ LPD3DXSPRITE spr;
 LPDIRECT3DTEXTURE9* backgroundTex = nullptr;
 LPDIRECT3DTEXTURE9* maskTex = nullptr;
 
+int map[640 * 480];
+
 
 
 //--------------------------------------------------------------------------------------
@@ -72,6 +74,10 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
         0,
         nullptr,
         nullptr, maskTex);
+
+
+   
+
 
     D3DXCreateSprite(pd3dDevice, &spr);
 
@@ -143,6 +149,9 @@ void CALLBACK OnD3D9LostDevice(void* pUserContext)
 //--------------------------------------------------------------------------------------
 void CALLBACK OnD3D9DestroyDevice(void* pUserContext)
 {
+    spr->Release();
+    (*maskTex)->Release();
+    (*backgroundTex)->Release();
 }
 
 
