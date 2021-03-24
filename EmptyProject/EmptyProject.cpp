@@ -29,6 +29,7 @@ enum PlayerState
     ON_EDGE,
     VISITING
 };
+PlayerState playerState = ON_EDGE;
 
 void updateTex();
 
@@ -191,42 +192,117 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFAC
 //--------------------------------------------------------------------------------------
 void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 {
-    
+    bool isPress = (GetAsyncKeyState(VK_SPACE) * 0x800) != 0;
+    if (playerState == ON_EDGE)
+    {
+        if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
+        {
+            int nextMap = map[py * 640 + px - 1];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                px -= 1;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+            }
+        }
+        if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
+        {
+            int nextMap = map[py * 640 + px + 1];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                px += 1;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+            }
+        }
+        if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
+        {
+            int nextMap = map[(py - 1) * 640 + px];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                py -= 1;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+            }
+        }
+        if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
+        {
+            int nextMap = map[(py + 1) * 640 + px];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                py += 1;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+            }
+        }
+    }
+    else if (playerState == VISITING)
+    {
+        if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
+        {
+            int nextMap = map[py * 640 + px - 1];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                playerState = ON_EDGE;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+                px -= 1;
+            }
+        }
+        if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
+        {
+            int nextMap = map[py * 640 + px + 1];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                playerState = ON_EDGE;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+                px += 1;
+            }
 
-    if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
-    {
-        int nextMap = map[py * 640 + px-1];
-        if (nextMap == MAP_PROPERTY_EDGE)
+        }
+        if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
         {
-            px -= 1;
+            int nextMap = map[(py - 1) * 640 + px];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                playerState = ON_EDGE;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+                py -= 1;
+            }
+
+        }
+        if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
+        {
+            int nextMap = map[(py + 1) * 640 + px];
+            if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                playerState = ON_EDGE;
+            }
+            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            {
+                playerState = VISITING;
+                py += 1;
+            }
         }
     }
-    if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
-    {
-        int nextMap = map[py * 640 + px + 1];
-        if (nextMap == MAP_PROPERTY_EDGE)
-        {
-            px += 1;
-        }
-        
-    }
-    if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
-    {
-        int nextMap = map[(py-1) * 640 + px];
-        if (nextMap == MAP_PROPERTY_EDGE)
-        {
-            py -= 1;
-        }
-        
-    }
-    if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
-    {
-        int nextMap = map[(py + 1) * 640 + px];
-        if (nextMap == MAP_PROPERTY_EDGE)
-        {
-            py += 1;
-        }
-    }
+
+
 }
 
 
