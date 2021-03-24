@@ -5,12 +5,17 @@
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
 #include "resource.h"
-;
+
+#define width = 640
+#define height = 480
+
+
 LPD3DXSPRITE spr;
 LPDIRECT3DTEXTURE9* backgroundTex = nullptr;
 LPDIRECT3DTEXTURE9* maskTex = nullptr;
 
 int map[640 * 480];
+DWORD pixelData[640 * 480];
 
 
 
@@ -76,7 +81,15 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
         nullptr, maskTex);
 
 
-   
+    RECT rc = { 0,0,640,480 };
+    D3DLOCKED_RECT lockRc;
+    if (SUCCEEDED((*backgroundTex)->LockRect(0, &lockRc, &rc, 0)))
+    {
+        DWORD* d = (DWORD*)lockRc.pBits;
+        memcpy(pixelData, d, 640 * 480 * 4);
+        (*backgroundTex)->UnlockRect(0);
+    }
+
 
 
     D3DXCreateSprite(pd3dDevice, &spr);
