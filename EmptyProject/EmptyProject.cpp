@@ -5,6 +5,8 @@
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
 #include "resource.h"
+#include <vector>
+using namespace std;
 
 #define width = 640
 #define height = 480
@@ -20,9 +22,11 @@ LPDIRECT3DTEXTURE9* maskTex = nullptr;
 LPDIRECT3DTEXTURE9* dotTex = nullptr;
 LPDIRECT3DTEXTURE9* playerTex = nullptr;
 
+vector<D3DXVECTOR3> playerPressPosition;
 int px, py;
 int map[640 * 480];
 DWORD pixelData[640 * 480];
+
 
 enum PlayerState
 {
@@ -32,6 +36,7 @@ enum PlayerState
 PlayerState playerState = ON_EDGE;
 
 void updateTex();
+void closePath();
 
 //--------------------------------------------------------------------------------------
 // Rejects any D3D9 devices that aren't acceptable to the app by returning false
@@ -186,6 +191,17 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFAC
     return S_OK;
 }
 
+void closePath()
+{
+    for (int i = 0; i < playerPressPosition.size(); ++i)
+    {
+        int x = playerPressPosition[i].x;
+        int y = playerPressPosition[i].y;
+
+        map[y * 640 + x] = MAP_PROPERTY_EDGE;
+    }
+    playerPressPosition.clear();
+}
 
 //--------------------------------------------------------------------------------------
 // Handle updates to the scene.  This is called regardless of which D3D API is used
@@ -252,10 +268,12 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             if (nextMap == MAP_PROPERTY_EDGE)
             {
                 playerState = ON_EDGE;
+                closePath();
             }
             else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
             {
-                playerState = VISITING;
+                D3DXVECTOR3 pos(px, py, 0);
+                playerPressPosition.push_back(pos);
                 px -= 1;
             }
         }
@@ -265,10 +283,12 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             if (nextMap == MAP_PROPERTY_EDGE)
             {
                 playerState = ON_EDGE;
+                closePath();
             }
             else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
             {
-                playerState = VISITING;
+                D3DXVECTOR3 pos(px, py, 0);
+                playerPressPosition.push_back(pos);
                 px += 1;
             }
 
@@ -279,10 +299,12 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             if (nextMap == MAP_PROPERTY_EDGE)
             {
                 playerState = ON_EDGE;
+                closePath();
             }
             else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
             {
-                playerState = VISITING;
+                D3DXVECTOR3 pos(px, py, 0);
+                playerPressPosition.push_back(pos);
                 py -= 1;
             }
 
@@ -293,10 +315,12 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             if (nextMap == MAP_PROPERTY_EDGE)
             {
                 playerState = ON_EDGE;
+                closePath();
             }
             else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
             {
-                playerState = VISITING;
+                D3DXVECTOR3 pos(px, py, 0);
+                playerPressPosition.push_back(pos);
                 py += 1;
             }
         }
@@ -336,7 +360,12 @@ void CALLBACK OnD3D9FrameRender(IDirect3DDevice9* pd3dDevice, double fTime, floa
             }
 
         }
-        
+        //playerPressPosition
+        for (int i = 0; i < playerPressPosition.size(); ++i)
+        {
+            spr->Draw(*dotTex, nullptr, nullptr, &playerPressPosition[i], D3DCOLOR_RGBA(255, 255, 255, 255));
+        }
+
         D3DXVECTOR3 playerPos(px-4, py-4, 0);
         spr->Draw(*playerTex, nullptr, nullptr, &playerPos, D3DCOLOR_RGBA(255, 255, 255, 255));
         
