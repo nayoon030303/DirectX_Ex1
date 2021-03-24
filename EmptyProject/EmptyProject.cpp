@@ -24,6 +24,11 @@ int px, py;
 int map[640 * 480];
 DWORD pixelData[640 * 480];
 
+enum PlayerState
+{
+    ON_EDGE,
+    VISITING
+};
 
 void updateTex();
 
@@ -69,7 +74,7 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
     }
     for (int y = 200; y <= 300; ++y)
     {
-        for (int x = 400; x <= 600; ++x)
+        for (int x = 400; x <= 500; ++x)
         {
             map[y * 640 + x] = MAP_PROPERTY_VISIT;
         }
@@ -78,10 +83,10 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
     for (int y = 200; y <= 300; ++y)
     {
         map[y * 640 + 400] = MAP_PROPERTY_EDGE;
-        map[y * 640 + 600] = MAP_PROPERTY_EDGE;
+        map[y * 640 + 500] = MAP_PROPERTY_EDGE;
     }
     //edge rows
-    for (int x = 400; x <= 600; ++x)
+    for (int x = 400; x <= 500; ++x)
     {
         map[200* 640 + x] = MAP_PROPERTY_EDGE;
         map[300 * 640 + x] = MAP_PROPERTY_EDGE;
@@ -186,21 +191,41 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFAC
 //--------------------------------------------------------------------------------------
 void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 {
+    
+
     if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
     {
-        px -= 1;
+        int nextMap = map[py * 640 + px-1];
+        if (nextMap == MAP_PROPERTY_EDGE)
+        {
+            px -= 1;
+        }
     }
     if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
     {
-        px += 1;
+        int nextMap = map[py * 640 + px + 1];
+        if (nextMap == MAP_PROPERTY_EDGE)
+        {
+            px += 1;
+        }
+        
     }
     if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
     {
-        py -= 1;
+        int nextMap = map[(py-1) * 640 + px];
+        if (nextMap == MAP_PROPERTY_EDGE)
+        {
+            py -= 1;
+        }
+        
     }
     if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
     {
-        py += 1;
+        int nextMap = map[(py + 1) * 640 + px];
+        if (nextMap == MAP_PROPERTY_EDGE)
+        {
+            py += 1;
+        }
     }
 }
 
