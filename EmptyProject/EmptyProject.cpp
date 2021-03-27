@@ -193,6 +193,7 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFAC
 
 void closePath()
 {
+    playerState = ON_EDGE;
     for (int i = 0; i < playerPressPosition.size(); ++i)
     {
         int x = playerPressPosition[i].x;
@@ -203,14 +204,19 @@ void closePath()
     playerPressPosition.clear();
 }
 
+
+bool isPress = false;
+bool previsPress = false;
 //--------------------------------------------------------------------------------------
 // Handle updates to the scene.  This is called regardless of which D3D API is used
 //--------------------------------------------------------------------------------------
 void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 {
-    bool isPress = (GetAsyncKeyState(VK_SPACE) * 0x800) != 0;
+    isPress = (GetAsyncKeyState(VK_SPACE) * 0x800) != 0;
+
     if (playerState == ON_EDGE)
     {
+        int curMapValue =  map[py * 640 + px];
         if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
         {
             int nextMap = map[py * 640 + px - 1];
@@ -218,9 +224,14 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 px -= 1;
             }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            if (nextMap == MAP_PROPERTY_EMPTY && 
+                curMapValue == MAP_PROPERTY_EDGE)
             {
-                playerState = VISITING;
+                if (isPress)
+                {
+                    playerState = VISITING;
+                }
+                
             }
         }
         if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
@@ -230,10 +241,16 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 px += 1;
             }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            if (nextMap == MAP_PROPERTY_EMPTY && 
+                curMapValue == MAP_PROPERTY_EDGE)
             {
-                playerState = VISITING;
+                if (isPress)
+                {
+                    playerState = VISITING;
+                }
+
             }
+            
         }
         if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
         {
@@ -242,9 +259,14 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 py -= 1;
             }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            if (nextMap == MAP_PROPERTY_EMPTY && 
+                curMapValue == MAP_PROPERTY_EDGE)
             {
-                playerState = VISITING;
+                if (isPress)
+                {
+                    playerState = VISITING;
+                }
+
             }
         }
         if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
@@ -254,9 +276,14 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 py += 1;
             }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
+            if (nextMap == MAP_PROPERTY_EMPTY && 
+                curMapValue == MAP_PROPERTY_EDGE)
             {
-                playerState = VISITING;
+                if (isPress)
+                {
+                    playerState = VISITING;
+                }
+
             }
         }
     }
@@ -265,67 +292,75 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
         if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
         {
             int nextMap = map[py * 640 + px - 1];
-            if (nextMap == MAP_PROPERTY_EDGE)
+            if (nextMap == MAP_PROPERTY_EMPTY)
             {
-                playerState = ON_EDGE;
-                closePath();
-            }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
-            {
+                px -= 1;
+                map[py * 640 + px] = MAP_PROPERTY_VISITING;
                 D3DXVECTOR3 pos(px, py, 0);
                 playerPressPosition.push_back(pos);
-                px -= 1;
+                
             }
+            else if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                closePath();
+            }
+           
         }
-        if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
+        else if ((GetAsyncKeyState(VK_RIGHT) * 0x800) != 0)
         {
             int nextMap = map[py * 640 + px + 1];
-            if (nextMap == MAP_PROPERTY_EDGE)
+            if (nextMap == MAP_PROPERTY_EMPTY )
             {
-                playerState = ON_EDGE;
-                closePath();
-            }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
-            {
+                px += 1;
                 D3DXVECTOR3 pos(px, py, 0);
                 playerPressPosition.push_back(pos);
-                px += 1;
+                map[py * 640 + px] = MAP_PROPERTY_VISITING;
+               
+            }
+            else if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                closePath();
             }
 
         }
-        if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
+        else if ((GetAsyncKeyState(VK_UP) * 0x800) != 0)
         {
             int nextMap = map[(py - 1) * 640 + px];
-            if (nextMap == MAP_PROPERTY_EDGE)
+            if (nextMap == MAP_PROPERTY_EMPTY)
             {
-                playerState = ON_EDGE;
-                closePath();
-            }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
-            {
+                py -= 1;
                 D3DXVECTOR3 pos(px, py, 0);
                 playerPressPosition.push_back(pos);
-                py -= 1;
+                map[py * 640 + px] = MAP_PROPERTY_VISITING;
+                
             }
+            else if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                closePath();
+            }
+            
 
         }
-        if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
+        else if ((GetAsyncKeyState(VK_DOWN) * 0x800) != 0)
         {
             int nextMap = map[(py + 1) * 640 + px];
-            if (nextMap == MAP_PROPERTY_EDGE)
+            if (nextMap == MAP_PROPERTY_EMPTY )
             {
-                playerState = ON_EDGE;
-                closePath();
-            }
-            else if (nextMap == MAP_PROPERTY_EMPTY && isPress)
-            {
+                py += 1;
+
                 D3DXVECTOR3 pos(px, py, 0);
                 playerPressPosition.push_back(pos);
-                py += 1;
+                map[py * 640 + px] = MAP_PROPERTY_VISITING;
+               
             }
+            else if (nextMap == MAP_PROPERTY_EDGE)
+            {
+                closePath();
+            }
+            
         }
     }
-
+    previsPress = false;
 
 }
 
