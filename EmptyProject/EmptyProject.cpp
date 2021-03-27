@@ -25,6 +25,7 @@ LPDIRECT3DTEXTURE9* dotTex = nullptr;
 LPDIRECT3DTEXTURE9* playerTex = nullptr;
 
 vector<D3DXVECTOR3> playerPressPosition;
+D3DXVECTOR3 startPosition;
 int px, py;
 int map[640 * 480];
 int binaryMap[640 * 480];
@@ -348,6 +349,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 if (isPress)
                 {
+                    startPosition = D3DXVECTOR3(px, py, 0);
                     playerState = VISITING;
                 }
                 
@@ -365,6 +367,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 if (isPress)
                 {
+                    startPosition = D3DXVECTOR3(px, py, 0);
                     playerState = VISITING;
                 }
 
@@ -383,6 +386,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 if (isPress)
                 {
+                    startPosition = D3DXVECTOR3(px, py, 0);
                     playerState = VISITING;
                 }
 
@@ -400,6 +404,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             {
                 if (isPress)
                 {
+                    startPosition = D3DXVECTOR3(px, py, 0);
                     playerState = VISITING;
                 }
 
@@ -408,7 +413,20 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
     }
     else if (playerState == VISITING)
     {
-        if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
+        if ((GetAsyncKeyState(VK_SPACE) * 0x8000) == 0)
+        {
+            playerState = ON_EDGE;
+            px = startPosition.x;
+            py = startPosition.y;
+            for (int i = 0; i < playerPressPosition.size(); ++i)
+            {
+                int x = playerPressPosition[i].x;
+                int y = playerPressPosition[i].y;
+                map[y * 640 + x] = MAP_PROPERTY_EMPTY;
+            }
+            playerPressPosition.clear();
+        }
+        else if ((GetAsyncKeyState(VK_LEFT) * 0x800) != 0)
         {
             int nextMap = map[py * 640 + px - 1];
             if (nextMap == MAP_PROPERTY_EMPTY)
