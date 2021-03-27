@@ -182,13 +182,20 @@ void updateTex()
     {
         for (int i = 0; i < 640 * 480; ++i)
         {
+            DWORD* d = (DWORD*)lockRc.pBits;
             if (map[i] == MAP_PROPERTY_VISIT)
             {
-                DWORD* d = (DWORD*)lockRc.pBits;
+              
                 d[i] = pixelData[i];
+                //d[i] = D3DCOLOR_ARGB(0, 255, 0, 0);
+            }
+            else
+            {
+                //d[i] = D3DCOLOR_ARGB(255, 255, 0, 0);
             }
        }
     }
+    (*maskTex)->UnlockRect(0);
 }
 
 //--------------------------------------------------------------------------------------
@@ -200,6 +207,8 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFAC
 {
     return S_OK;
 }
+
+
 
 //[x,y]에서 부터 s을 n으로 바꾼다.
 void foolFilled(int x, int y, int s, int n)
@@ -223,10 +232,10 @@ void foolFilled(int x, int y, int s, int n)
 
         map[index] = n;
 
-        stack.push(yIndex * 640 + x - 1);
-        stack.push(yIndex * 640 + x - 1);
-        stack.push((yIndex - 1) * 640);
-        stack.push((yIndex + 1) * 640);
+        stack.push(yIndex * 640 + (xIndex - 1));
+        stack.push(yIndex * 640 + (xIndex - 1));
+        stack.push((yIndex - 1) * 640 + xIndex);
+        stack.push((yIndex + 1) * 640 + xIndex);
 
 
     }
@@ -234,8 +243,43 @@ void foolFilled(int x, int y, int s, int n)
 
 void Map_SetProperty(int x, int y)
 {
-    foolFilled(x, y, MAP_PROPERTY_EMPTY, MAP_PROPERTY_TEMP);
+    foolFilled(10, 10, MAP_PROPERTY_EMPTY, MAP_PROPERTY_TEMP);
 
+    for (int i = 0; i < 640 * 480; ++i)
+    {
+        if (map[i] == MAP_PROPERTY_TEMP)
+        {
+            binaryMap[i] = MAP_PROPERTY_EMPTY;
+        }
+        else
+        {
+            binaryMap[i] = MAP_PROPERTY_VISIT;
+        }
+    }
+
+    memcpy(map, binaryMap, 640 * 480 * sizeof(int));
+    updateTex();
+    D3DLOCKED_RECT tlr;
+    RECT tdr = { 0,0,640,480 };
+    //if (SUCCEEDED((*maskTex)->LockRect(0, &tlr, &tdr, 0)))
+    //{
+    //    for (int y = 0; y < 480; ++y)
+    //    {
+    //        for (int x = 0; x < 640; ++x)
+    //        {
+    //            DWORD* p = (DWORD*)tlr.pBits;
+    //            if (map[y * 640 + x] == MAP_PROPERTY_VISIT)
+    //            {
+    //                p[y * 640 + x] = pixelData[y * 640 + x];
+    //                D3DCOLOR_ARGB(0, 0, 0, 0);
+    //            }
+    //            else
+    //            {
+    //                 //p[y * 640 + x] = D3DCOLOR_ARGB(255, 255, 0, 0);
+    //            }
+    //        }
+    //    }
+    //}
 }
 
 void closePath()
@@ -350,6 +394,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             else if (nextMap == MAP_PROPERTY_EDGE)
             {
                 closePath();
+                Map_SetProperty(px, py);
             }
            
         }
@@ -367,6 +412,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             else if (nextMap == MAP_PROPERTY_EDGE)
             {
                 closePath();
+                Map_SetProperty(px, py);
             }
 
         }
@@ -384,6 +430,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             else if (nextMap == MAP_PROPERTY_EDGE)
             {
                 closePath();
+                Map_SetProperty(px, py);
             }
             
 
@@ -403,6 +450,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
             else if (nextMap == MAP_PROPERTY_EDGE)
             {
                 closePath();
+                Map_SetProperty(px,py);
             }
             
         }
