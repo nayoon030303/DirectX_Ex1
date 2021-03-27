@@ -6,6 +6,7 @@
 #include "DXUT.h"
 #include "resource.h"
 #include <vector>
+#include <stack>
 using namespace std;
 
 #define width = 640
@@ -14,6 +15,7 @@ using namespace std;
 #define MAP_PROPERTY_VISITING 200
 #define MAP_PROPERTY_VISIT 300
 #define MAP_PROPERTY_EMPTY 400
+#define MAP_PROPERTY_TEMP 500
 
 
 LPD3DXSPRITE spr;
@@ -189,6 +191,43 @@ HRESULT CALLBACK OnD3D9ResetDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFAC
     void* pUserContext)
 {
     return S_OK;
+}
+
+//[x,y]에서 부터 s을 n으로 바꾼다.
+void foolFilled(int x, int y, int s, int n)
+{
+    stack<int> stack;
+    stack.push(y * 640 + x);
+
+    while (!stack.empty()) 
+    {
+        int index = stack.top();
+        stack.pop();
+
+        int xIndex = index % 640;
+        int yIndex = index / 640;
+
+        if (xIndex < 0)continue;
+        if (xIndex >= 640)continue;
+        if (yIndex < 0)continue;
+        if (yIndex >= 480)continue;
+        if (map[index] != s) continue;
+
+        map[index] = n;
+
+        stack.push(yIndex * 640 + x - 1);
+        stack.push(yIndex * 640 + x - 1);
+        stack.push((yIndex - 1) * 640);
+        stack.push((yIndex + 1) * 640);
+
+
+    }
+}
+
+void Map_SetProperty(int x, int y)
+{
+    foolFilled(x, y, MAP_PROPERTY_EMPTY, MAP_PROPERTY_TEMP);
+
 }
 
 void closePath()
