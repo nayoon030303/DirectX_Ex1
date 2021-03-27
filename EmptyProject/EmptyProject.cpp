@@ -27,6 +27,7 @@ LPDIRECT3DTEXTURE9* playerTex = nullptr;
 vector<D3DXVECTOR3> playerPressPosition;
 int px, py;
 int map[640 * 480];
+int binaryMap[640 * 480];
 DWORD pixelData[640 * 480];
 
 
@@ -79,12 +80,15 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
     for (int i = 0; i < 640 * 480; ++i)
     {
         map[i] = MAP_PROPERTY_EMPTY;
+        binaryMap[i] = MAP_PROPERTY_EMPTY;
     }
     for (int y = 200; y <= 300; ++y)
     {
         for (int x = 400; x <= 500; ++x)
         {
             map[y * 640 + x] = MAP_PROPERTY_VISIT;
+            binaryMap[y * 640 + x] = MAP_PROPERTY_VISIT;
+
         }
     }
     //edge columns
@@ -92,12 +96,16 @@ HRESULT CALLBACK OnD3D9CreateDevice(IDirect3DDevice9* pd3dDevice, const D3DSURFA
     {
         map[y * 640 + 400] = MAP_PROPERTY_EDGE;
         map[y * 640 + 500] = MAP_PROPERTY_EDGE;
+        binaryMap[y * 640 + 400] = MAP_PROPERTY_VISIT;
+        binaryMap[y * 640 + 500] = MAP_PROPERTY_VISIT;
     }
     //edge rows
     for (int x = 400; x <= 500; ++x)
     {
         map[200* 640 + x] = MAP_PROPERTY_EDGE;
         map[300 * 640 + x] = MAP_PROPERTY_EDGE;
+        binaryMap[200 * 640 + x] = MAP_PROPERTY_VISIT;
+        binaryMap[300 * 640 + x] = MAP_PROPERTY_VISIT;
     }
 
     backgroundTex = new LPDIRECT3DTEXTURE9();
