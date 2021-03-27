@@ -241,6 +241,33 @@ void foolFilled(int x, int y, int s, int n)
     }
 }
 
+void MakeEDGE()
+{
+    for (int x = 0; x < 640-1; ++x)
+    {
+        for (int y = 0; y < 480-1; ++y)
+        {
+            if (map[y * 640 + x] != MAP_PROPERTY_VISIT) continue;
+
+            /*map[y * 640 + (x - 1)];
+            map[y * 640 + (x + 1)];
+            map[(y - 1) * 640 + x];
+            map[(y + 1) * 640 + x];
+            map[(y - 1) * 640 + (x - 1)];
+            map[(y - 1) * 640 + (x + 1)];
+            map[(y + 1) * 640 + (x - 1)];
+            map[(y + 1) * 640 + (x + 1)];*/
+            if (map[y * 640 + (x - 1)] == MAP_PROPERTY_EMPTY || map[y * 640 + (x + 1)] == MAP_PROPERTY_EMPTY ||
+                map[(y - 1) * 640 + x] == MAP_PROPERTY_EMPTY || map[(y + 1) * 640 + x] == MAP_PROPERTY_EMPTY ||
+                map[(y - 1) * 640 + (x - 1)] == MAP_PROPERTY_EMPTY || map[(y + 1) * 640 + (x - 1)] == MAP_PROPERTY_EMPTY ||
+                map[(y - 1) * 640 + (x + 1)] == MAP_PROPERTY_EMPTY || map[(y + 1) * 640 + (x + 1)] == MAP_PROPERTY_EMPTY)
+            {
+                map[y * 640 + x] = MAP_PROPERTY_EDGE;
+            }
+        }
+    }
+}
+
 void Map_SetProperty(int x, int y)
 {
     foolFilled(10, 10, MAP_PROPERTY_EMPTY, MAP_PROPERTY_TEMP);
@@ -280,6 +307,7 @@ void Map_SetProperty(int x, int y)
     //        }
     //    }
     //}
+    MakeEDGE();
 }
 
 void closePath()
